@@ -1,0 +1,78 @@
+#include 'totvs.ch'
+
+Function U_WORK_ORDENACAO_E_BUSCAS
+
+	Local cListaDeFornecedores   as character
+	Local nQuantidadeDeRegistros as numeric
+
+	rpcSetEnv( '99' , '01' ) //ambiente da empresa 99 loja 01
+
+	dbSelectArea("SA2") //ativa a area de trabalho que será padronizada
+	dbSetOrder(retOrder("SA2","A2_FILIAL+A2_COD")) // lista a ordenação, neste caso, por area de trabalho, filial e codigo
+	cChaveIndice         := indexKey(retOrder("SA2","A2_FILIAL+A2_COD"))
+	cChaveBusca          := '  00000301' // dois espaços no inicio indicam que a filial esta em branco
+	dbSeek(cChaveBusca) // aqui só busca pela variavel criada em cima
+	dbSeek(cChaveBusca,.T.) // aqui está setando como true para que, caso não encontre a chave, apresente a primeira chave válida no db
+
+	SA1->(dbSetOrder(2), dbSeek(SA2->(A2_FILIAL+A2_NOME))) //outra forma de utilizar dbeek
+
+	dbSkip(1) //avança para o próximo parametro da area de trabalho ativo
+	dbSkip(2) //avança para o próximo parametro da area de trabalho ativo pulando de dois em dois
+	dbSkip(-3) //retrocede para o parametro anterior da area de trabalho ativo
+
+	dbGoTo(9) //função responsabel por procurar itens pelo R_E_C_N_O_ (famoso ID)
+	dbGoTo(4)
+	dbGoTo(10)
+	dbGoTo(2)
+
+	dbGoTop() // leva a busca para o topo da lista
+	dbGoBottom() // leva a lista para o fim da lista
+
+	//-- bof() --> Indica que o ponteiro da area de trabalho esta posicionado no inicio do arquivo (begin of file)
+	//-- eof() --> Indica que o ponteiro da area de trabalho esta posicionado no final do arquivo (ende of file)
+
+	SA2->(dbSetOrder(1),dbGoTop())
+
+	While .T.
+
+		nQuantidadeDeRegistros++
+		SA2->(dbSkip())
+
+		IF SA2->(eof())
+			Exit
+		EndIF
+
+	Enddo
+
+	While .T.
+
+		cListaDeFornecedores := CRLF + SA2->(A2_COD + " - " + A2_NOME)
+		SA2->(dbSkip(-1))
+
+		IF SA2->(bof())
+			Exit
+		EndIF
+
+	Enddo
+
+	//-- reclock() --> Utilizado para reservar um registro para alteração ou para indicar que sera executada uma inclusao ou alteração
+	//-- msunlock() --> Utilizado para destravar e confirmar a inclusao/alteracao de registro no db
+	SA2->(dbSetOrder(1),dbGoTop())
+
+	While .not. SA2->(eof())
+
+		SA2->(reclock("SA2",.F.))
+		SA2->A2_NREDUZ       := LEFT(SA2->A2_NOME,AT(" ",SA2->A2_NOME)) // a função AT espera 2 parametros, o caracter que seseja encontrar (espaço neste caso) e o local onde procurar
+		SA2->(msunlock())
+
+		SA2->(dbSkip())
+
+	Enddo
+
+	//-- dbCloseArea --> Indica que a area de trabalho deve ser encerrada
+	SA2->(dbCloseArea())
+	dbCloseArea()
+
+	rpcClearEnv()
+
+Return

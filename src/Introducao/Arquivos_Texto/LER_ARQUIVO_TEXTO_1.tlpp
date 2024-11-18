@@ -1,0 +1,53 @@
+#include 'totvs.ch'
+
+/*/                                                {Protheus.doc} U_LER_ARQUIVO_TEXTO_1
+    @see https: //tdn.totvs.com/display/tec/FOpen
+    @see https: //tdn.totvs.com/display/tec/FSeek
+    @see https: //tdn.totvs.com/display/tec/FRead
+    @see https: //tdn.totvs.com/display/tec/Len
+    @see https: //tdn.totvs.com/display/tec/StrToArr
+    @see https: //tdn.totvs.com/display/tec/AEval
+    /*/
+Function U_LER_ARQUIVO_TEXTO_1
+    
+    Local cArquivo  as character
+    Local cBuffer   as character
+    Local cTexto    as character
+
+    Local nHandle   as numeric
+    Local nTamFile  as numeric
+    Local nTamLidos as numeric
+
+    Local aLinhas   as array
+    Local aDados    as array
+
+    rpcSetEnv("99","01")
+
+    cArquivo  := 'C:\TOTVS\ListaClifor.csv'
+
+    nHandle   := FOpen(cArquivo)
+
+    if nHandle < 0
+        fwAlertError("Erro ao efetuar a leitura dos arquivo" + str(fError(),4)) //4 espaçoes no começo da msg.
+        rpcClearEnv()
+        Return .F.
+    endif
+
+    nTamFile  := FSeek(nHandle,0,2) //1-nome do arquivo; 2-a posição de inicio; 3-indica que quer o tamanho(não sei pq); retorna a resposta para o final do arquivo
+    FSeek(nHandle,0) // pega o arquivo encontrado e o joga no inicio ddo arquivo novamente
+
+    while nTamLidos < nTamFile
+        cBuffer   := ''
+        nTamLidos := FRead(nHandle,@cBuffer,100) //le todos os arquivos do handle e, por referencia, salva no buffer. Isto de 100 em 100
+        cTexto    := cBuffer
+    enddo
+
+    fClose(nHandle)
+
+    aDados    := array(0)
+    aLinhas   := strToKArr(cTexto,CHR(13) + CHR(10)) //este CHR(13) + CHR(10) representa o CRLF (quebra de linha)
+    AEval(aLinhas,{|x| aadd(aDados, strToKArr(x,";"))})
+
+    rpcClearEnv()
+
+Return

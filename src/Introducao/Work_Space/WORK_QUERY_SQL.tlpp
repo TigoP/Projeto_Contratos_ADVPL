@@ -1,0 +1,23 @@
+#include 'totvs.ch'
+
+Function U_WORK_QUERY_SQL
+
+	Local cSQL   := ''
+	Local aDados := array(0)
+
+	rpcSetEnv( '99' , '01' )
+
+	cSQL         := "SELECT A2_COD, A2_LOJA, A2_NOME, A2_DTNASC FROM SA2990 WHERE D_E_L_E_T_ = ' ' ORDER BY A2_NOME"
+
+	dbUseArea(.T.,"TOPCONN",tcGenQRY(,,cSQL),"QRY",.T.,.F. ) //1-nova area, 2-local, 3-qual arquivo(ele recebe 3 parametros ,, indicam que não vai usar os dois primeiros. Só o terceiro), 4 alias que nao se repete, 5 se é compartilhado, 6- se é somente leitura
+	tcSetField("QRY","A2_DTNASC","D",8,0) //É um conversor de dados. Parametros: 1-area, 2-qual campo, 3-qual tipo de dado, 4- quantos digitos, 5-quantas casas decimais
+
+	while .not. QRY->(eof())
+		QRY->(aadd(aDados, {A2_COD, A2_LOJA, A2_NOME, A2_DTNASC}), dbSkip())
+	enddo
+
+	QRY->(dbCloseArea())
+
+	rpcClearEnv()
+
+Return aDados

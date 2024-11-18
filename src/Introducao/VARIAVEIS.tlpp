@@ -1,0 +1,29 @@
+#include 'totvs.ch'
+
+Function U_VARIAVEISTLPP as logical
+
+	Local xVarTipoVariant as variant
+	Local nVarTipointeiro as integer
+	Local nVarTipoNumeric as numeric
+	Local nVarTipoDouble as double
+	Local nVarTipodecimal as decimal
+	Local lVarTipoLogico as logical
+	Local cVarTipoTexto as character
+	Local dVarTipoData as date
+	Local bVarTipoBloco as codeblock
+	Local oVartipoObject as object
+	Local oVarTipoJson as oVarTipoJson
+	Local aVarTipoArray as array
+
+	xVarTipoVariant := nill
+	nVarTipointeiro := 41
+	nVarTipoNumeric := 41
+	nVarTipoDouble  := 41.5
+	nVarTipodecimal := DEC_CREATE(7233.759119, 21, 20)
+	lVarTipoLogico  := .T.
+	cVarTipoTexto  := 'Texto'
+	dVarTipoData  := date()
+	bVarTipoBloco  := {|| alert('ok')}
+	oVartipoObject  := fwJsonObject():new()
+	oVarTipoJson  := tFont():new()
+	aVarTipoArray  := array()

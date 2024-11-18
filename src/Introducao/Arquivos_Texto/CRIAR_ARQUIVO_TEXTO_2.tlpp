@@ -1,0 +1,73 @@
+#include 'totvs.ch'
+
+/*/{Protheus.doc} U_CRIAR_ARQUIVO_TEXTO_2escription)
+
+    @see https: //tdn.totvs.com/display/framework/FWFileWriter
+    /*/
+Function U_CRIAR_ARQUIVO_TEXTO_2
+
+    Local cSaveFile  as character
+    Local cBuffer    as character
+    Local oArqtxt    as character
+    Local lExistFile as logical
+    Local lArqtxt    as logical
+    Local lWrite     as logical
+
+    rpcSetEnv( '99' , '01' ) //chama ambiente e loja
+
+    cSaveFile  := 'C:\TOTVS\ListaClifor.txt' //cria um arquivo no caminho
+    lExistFile := File(cSaveFile) //armazena arquivo criado na variavel
+    oArqtxt    := FWFileWriter():New(cSaveFile, .F.) //se true, faz um buffer e só carrega ao final do processo se false carrega a cada vez que chamar a função
+    
+
+    if lExistFile //verifica se existe o arquivo
+
+        lArqtxt    := oArqtxt:open(2) // o 0 indica que é só leitura, 1 indica que é editavel e o 2 faz os dois
+
+        if lArqtxt //se o arquivo existir
+            oArqtxt:clear() //entra nele e o limpa
+        else
+            fwAlertError(oArqtxt:Error():message, 'ERRO AO ABRIR ARQUIVO' ) //senao existir, dá msg de erro
+            rpcClearEnv() //limpa a lisença
+            return .F. //e fecha o arquivo
+        endif
+
+    else //se não exite arquivo
+        
+        lArqtxt    := oArqtxt:Create() //cria um
+
+        if .not. lArqtxt // se não conseguiu criar
+            fwAlertError(oArqtxt:Error():message, 'ERRO AO CRIAR ARQUIVO' ) //indica erro
+            rpcClearEnv() //limpa lisença
+            return .F. //fecha
+        endif
+
+    endif
+
+    //agora, se conseguiu criar o arquivo, salvar e abrir:
+
+    cBuffer    := padr("CODIGO",10) + padr("LOJA",5) + padr("NOME",30) + padr("DT NASCIMENTO",20) + padr("ENTIDADE",10) //cria cabeçalho
+    lWrite     := oArqtxt:write(cBuffer) //escrevo o cabeçalho no arquivo
+
+    if .not. lWrite //se não conseguiu escrever
+        fwAlertError(oArqtxt:Error():message,"ERRO AO ESCREVER NO ARQUIVO") //informa erro
+        rpcClearEnv() //libera lisença
+        return .F. //fecha arquivo
+    endif
+
+    cBuffer    := CRLF + strtran(space(80)," ","-") //pula uma linha e insere pontilhados nos 80 espaços indicados
+    oArqtxt:write(cBuffer) //escreve a indicaçao acima no arquivo
+
+    //aqui forma os blocos com contendo espaços, e chamando pelo prefixo os dados no db 
+    bBloco     := {|| cPrefixo := substr(alias(),2,2),;
+                  cBuffer    := CRLF + padr(&(cPrefixo + "_COD"),10) + padr(&(cPrefixo + "_LOJA"),05) + padr(LEFT(&(cPrefixo + "_NOME"),30),35) + padr(dtoc(&(cPrefixo + "_DTNASC")),20) + padr(alias(),10),;
+                  oArqtxt:write(cBuffer)} //escreve tudo no arquivo
+
+    SA1->(dbEval(bBloco)) //indica o prefixo
+    SA2->(dbEval(bBloco))
+
+    oArqtxt:close()
+
+    rpcClearEnv()
+    
+Return

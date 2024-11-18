@@ -1,0 +1,70 @@
+#include 'totvs.ch'
+
+/*/{Protheus.doc} 
+    @see https://tdn.totvs.com/display/tec/FCreate
+    @see https://tdn.totvs.com/display/tec/FWrite
+    @see https://tdn.totvs.com/display/tec/FError
+    @see https://tdn.totvs.com/display/tec/FClose
+    @see https://tdn.totvs.com/display/tec/File
+    @see https://tdn.totvs.com/display/tec/FErase
+    /*/
+Function U_CRIAR_ARQUIVO_TEXTO_1
+
+	Local cSaveFile as character
+	Local cBuffer as character
+	Local nbuffer as numeric
+	Local nHandle as numeric
+	Local nRight as numeric
+
+	rpcSetEnv('99','01')
+
+	cSaveFile := 'C:\TOTVS\ListarClifor.txt'
+
+	IF File(cSaveFile) //verifica se existe o arquivo
+		FErase(cSaveFile) //apaga o arquivo
+	EndIF
+
+	nHandle := FCreate(cSaveFile)//a function fCreate retorna um numerico por padrão
+
+	if nHandle < 0
+		fwAlertError("Erro ao criar o arquivo. Codigo do erro: " + Str(FError(),4), "Erro")// o 4 significa a quantidade de espaços antes da msg
+		rpcClearEnv() //se consumiu uma licensa, ele a libera
+		return .F.
+	endif
+
+	cBuffer := padr("ENTIDADE",10) + padr("CODIGO",10) + padr("LOJA",5) + padr("NOME",35) + padr("DT NASCIMENTO",20) //pad de padronizar r de right. Padroniza a quantidade de caractere.
+	nbuffer := Len(cBuffer)
+	nWrite := FWrite(nHandle,cBuffer)//recebe função de escrita a variavel de controle e o conteudo
+
+	if nWrite <> nbuffer
+		fwAlertError("Erro ao gravar o arquivo. Codigo do erro: " + Str(FError(),4), "Erro")// o 4 significa a quantidade de espaços antes da msg
+		FClose(nHandle)
+		rpcClearEnv() //se consumiu uma licensa, ele a libera
+		return .F.
+	endif
+
+	cBuffer := CRLF + strtran(space(80)," ", "-") // transforma uma string em outra. 1-string que passará pela transformação, 2-o caracter que será trocado, 3- o caracter que ficará no lugar dele
+	nbuffer := Len(cBuffer)
+	nWrite := FWrite(nHandle,cBuffer)//recebe função de escrita a variavel de controle e o conteudo
+
+	if nWrite <> nbuffer
+		fwAlertError("Erro ao gravar o arquivo. Codigo do erro: " + Str(FError(),4), "Erro")// o 4 significa a quantidade de espaços antes da msg
+		FClose(nHandle)
+		rpcClearEnv() //se consumiu uma licensa, ele a libera
+		return .F.
+	endif
+
+	cPrefixo = ''
+
+	bBloco := {|| cPrefixo := substr(alias(),2,2),; //posição 2 com + 2 caracteres
+				  cBuffer := CRLF + padr(alias(),10) + padr(&(cPrefixo + "_COD"),10) + padr(&(cPrefixo + "_LOJA"),5) + padr(LEFT(&(cPrefixo + "_NOME"),30),35) + padr(dtoc(&(cPrefixo + "_DTNASC")),20),; //O dtoc transforma texto em data //O left faz a contagem da esquerda pra direita.
+				  FWrite(nHandle,cBuffer)}
+
+	SA1->(dbEval(bBloco))
+	SA2->(dbEval(bBloco))
+
+	fclose(nHandle)
+
+	rpcClearEnv()
+
+Return

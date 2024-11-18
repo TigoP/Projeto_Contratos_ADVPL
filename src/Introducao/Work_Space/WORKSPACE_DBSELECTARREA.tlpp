@@ -1,0 +1,15 @@
+#include 'totvs.ch'
+
+Function U_WORK_DBSELECTAREA
+	//grp    lj    user    senh  ambie   função
+	rpcSetEnv('99', '01', 'admin', ' ', 'FAT', 'U_WORK_DBSELECTAREA')
+
+	dbSelectArea("SA1")
+	dbSelectArea('SB1')
+
+	nAreaSA1 := select("SA1")
+
+	dbSelectArea(nAreaSA1) //somente para estudo, pois não usa normalmente
+
+	rpcSetEnv()
+Return

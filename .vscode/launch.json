@@ -1,0 +1,76 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "TOTVS",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:\\TOTVS\\Protheus\\1212210\\Protheus\\bin\\smartclient\\smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": true,
+			"extendFeatures": {
+				"charDetails": false
+			}
+		}
+	],
+	"lastPrograms": [
+		{
+			"label": "sigamdi"
+		},
+		{
+			"label": "sigacfg"
+		},
+		{
+			"label": "U_BLOCOSDECODIGO"
+		},
+		{
+			"label": "U_WORK_DBSELECTAREA"
+		},
+		{
+			"label": "U_WORK_ORDENACAO_E_BUSCAS"
+		},
+		{
+			"label": "U_WORK_QUERY_SQL"
+		},
+		{
+			"label": "U_WORK_SQL_2"
+		},
+		{
+			"label": "U_WORK_SQL_3"
+		},
+		{
+			"label": "U_WORK_ARQUIV_TEMP_1"
+		},
+		{
+			"label": "U_WORK_ARQUIVO_TEMPORARIO_1"
+		},
+		{
+			"label": "U_WORK_ARQUIVO_TEMPORARIO_2"
+		},
+		{
+			"label": "U_WORK_ARQUIVO_TEMPORARIO_3"
+		},
+		{
+			"label": "U_CRIAR_ARQUIVO_TEXTO_1"
+		},
+		{
+			"label": "U_CRIAR_ARQUIVO_TEXTO_2"
+		},
+		{
+			"label": "U_LER_ARQUIVO_TEXTO_1"
+		},
+		{
+			"label": "U_LER_ARQUIVO_TEXTO_2"
+		},
+		{
+			"label": "U_COTACOES_MOEDAS_BC"
+		},
+		{
+			"label": "U_NOVO_FORNECEDOR"
+		}
+	],
+	"lastProgramExecuted": "sigacfg"
+}

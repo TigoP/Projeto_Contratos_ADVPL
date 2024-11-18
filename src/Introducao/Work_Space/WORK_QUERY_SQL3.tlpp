@@ -1,0 +1,25 @@
+#include 'totvs.ch'
+
+Function U_WORK_SQL_3
+
+	rpcSetEnv( '99' , '01' )
+
+	aDados := array(0)
+
+	BeginSQL Alias 'QRY'
+
+        COLUMN A1_DTNASC as DATE //converte a string data para date
+        SELECT A1_COD, A1_NOME, A1_DTNASC, D_E_L_E_T_ DELETE_ //consulta padrao
+        FROM %table:SA1% SA1 //ao inves de escrever SA1990 ele patroniza para, não importando a empresa logada, ele buscar
+        WHERE SA1.%notdel% //SA1. é um alias e o restante é padrão para not delete
+        AND A1_FILIAL = %xFilial:SA1% //ao inves de escrever SA1990 ele patroniza para, não importando a empresa logada, ele buscar
+        AND A1_DTNASC <= %exp:date()% //padrão para buscar data atual
+        ORDER BY %order:SA1,2% // o 2 é o indice do array
+
+	EndSQL
+
+	QRY->(dbEval({|| aadd(aDados, {A1_COD,A1_NOME,A1_DTNASC,DELETE_})}))
+
+	rpcClearEnv()
+
+Return

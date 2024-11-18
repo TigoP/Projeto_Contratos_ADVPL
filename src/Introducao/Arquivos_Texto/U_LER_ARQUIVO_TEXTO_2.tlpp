@@ -1,0 +1,43 @@
+#include 'totvs.ch'
+
+/*/{Protheus.doc} U_LER_ARQUIVO_TEXTO_2
+    @see https://tdn.totvs.com/display/public/framework/FWFileReader
+    @see https://tdn.totvs.com/display/tec/ASort
+    /*/
+Function U_LER_ARQUIVO_TEXTO_2 //função que lê arquivos
+
+    Local cArquivo  as character
+    Local cBuffer   as character
+    Local cTexto    as character
+    Local aLinhas   as array
+    Local aDados    as array
+    Local oFile     as object
+
+    rpcSetEnv('99','01') //inicia o ambiente
+
+    cArquivo    := 'C:\TOTVS\ListaCliFor.csv' //encontra local do arquivo
+
+    oFile       := fwFileReader():new(cArquivo) //cria uma nova instancia do arquivo
+    lOpen       := oFile:open() //abre o aquivp
+
+    IF lOpen //se existe
+        While .not. oFile:eof() //enquanto não chegar ao fim do arquivo
+            cBuffer := oFile:getLine() //lê linha a linha e pula para a procima
+            cTexto  += if(empty(cTexto),'',CRLF) + cBuffer // se estiver vazio pula uma linha e armazena os dados
+        Enddo
+    Else
+        fwAlertError(oFile:error():message,'ERRO AO ABRIR ARQUIVO')
+        rpcClearEnv()
+        return .F.
+    EndIF
+
+    oFile:close()
+
+    aLinhas := strToKArr(cTexto,CHR(13) + CHR(10)) 
+    aDados  := {}
+    aEval(aLinhas,{|x| aadd(aDados,strToKArr(x,";"))})
+    aSort(aDados,2,,{|x,y| x[2] + x[1] < y[2] + y[1]})
+
+    rpcClearEnv()
+    
+Return
