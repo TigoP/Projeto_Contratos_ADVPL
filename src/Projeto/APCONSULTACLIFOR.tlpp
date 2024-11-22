@@ -1,0 +1,31 @@
+#include 'totvs.ch'
+
+Function U_CONSULTACLIFOR
+
+    if type("cCodClienteFornecedor") == "C" //se já existir
+        cCodClienteFornecedor         := space(tamSX3("A1_COD" )[1]) //apaga o que já existe substituindo o conteudo pela quantidade de caracter que existia antes para que assim, seja substituido por novo nome no db
+        cLojaClienteFornecedor        := space(tamSX3("A1_LOJA")[1]) //faz o mesmo
+    else
+        Public cCodClienteFornecedor  := space(tamSX3("A1_COD" )[1])  as character //se não existir, cria
+        Public cLojaClienteFornecedor := space(tamSX3("A1_LOJA")[1]) as character
+    endif
+
+    if M->Z51_TPINTE == "C" // se faz integração cadastro de fornecedores
+
+        if conpad1(,,,"SA2")//se existe CONsulta PADrão no cadastro de fornecedores (se clicou no botao de confirmar)
+            cCodClienteFornecedor  := SA2_A2_COD //a variavel é substituida pelo codigo do fornecedor do db
+            cLojaClienteFornecedor := SA2_A2_LOJA
+            return .T.
+
+        else
+
+            conpad1(,,,"SA1")//se existe CONsulta PADrão no cadastro de fornecedores (se clicou no botao de confirmar)
+            cCodClienteFornecedor  := SA1_A1_COD //a variavel é substituida pelo codigo do fornecedor do db
+            cLojaClienteFornecedor := SA1_A1_LOJA
+            return .T.
+
+        endif
+
+    endif
+
+return .F.
