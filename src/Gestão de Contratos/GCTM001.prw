@@ -76,6 +76,9 @@ Static Function modeldef //-- 3/3 STATICS PRINCIPAIS --
     Local bModelPos := {|x| fnModPos(x)}
     Local bCommit   := {|x| fnCommit(x)}
     Local bCancel   := {|x| fnCancel(x)}
+    Local bFieldPre := {|oSubModel,cIdAction,cIdField,xValue| fnFieldPre(oSubModel,cIdAction,cIdField,xValue)}
+    Local bFieldPos := {|oSubModel|                           fnFieldPos(oSubModel)}
+    Local bFieldLoad:= {|oSubModel,lCopy|                     fnFieldLoad(oSubModel,lCopy)}
 
     oStruct         := FWFormStruct(1, 'Z50' )
     oModel          := mpFormModel():New('MODEL_GCTM001',bModelPre,bModelPos,bCommit,bCancel)
@@ -85,7 +88,7 @@ Static Function modeldef //-- 3/3 STATICS PRINCIPAIS --
     oStruct:addTrigger(aTrigger[1],aTrigger[2],aTrigger[3],aTrigger[4])
     oStruct:setProperty( 'Z50_TIPO' ,MODEL_FIELD_WHEN,{|| INCLUI})
 
-    oModel:addFields( 'Z50MASTER' ,,oStruct)
+    oModel:addFields( 'Z50MASTER' ,,oStruct,bFieldPre,bFieldPos,bFieldLoad)
     oModel:setDescription( 'Tipos de Contratos' )
     oModel:setPrimaryKey({'Z50_FILIAL', 'Z50_CODIGO'})
     
@@ -151,6 +154,40 @@ Static Function fnCancel(oModel)
     Local lCancel := FWFormCancel(oModel)
     
 Return lCancel
+
+Static Function fnFieldPre(oSubModel,cIdAction,cIdField,xValue)
+
+    Local oModel := FWModelActive()
+    Local lValid := .T.
+
+    /*if cIdAction == 'CANSETVALUE' //se o campo pode receber valor no incluir
+        
+        if cIdField == 'Z50_CODIGO' //se o campo for o codigo
+            lValid := .F. //recebe falso para que não consiga ser alterado
+        endif
+
+    endif*/
+
+    if cIdAction == 'SETVALUE'
+        if cIdField == 'Z50_DESCRI'
+            if empty(xValue) //verifica se está sendo atribuido algo
+                oModel:setErrorMessage(,,,,'NAOVAZIO','O conteudo nao pode ser vazio')
+                lValid := .F.
+            endif
+        endif
+    endif
+    
+Return lValid
+
+Static Function fnFieldPos(oSubModel)
+
+    Local lValid := .T.
+
+Return lValid
+
+Static Function fnFieldLoad(oSubModel,lCopy)
+    
+Return formLoadField(oSubModel,lCopy)
 
 /*/{Protheus.doc} função que gera gatilho /*/
 Function U_GCTT001
