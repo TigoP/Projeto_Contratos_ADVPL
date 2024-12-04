@@ -21,6 +21,10 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
 
     Local oDlg
     Local aAdvSize := msAdvSize()
+    Local nCampos  := Count()
+    Local cCampos  := ''
+    Local xConteudo
+    Local x
 
     oDlg := tDialog():new(0             ,; // -- Coordenada inicial, Linha inicial (Pixels)
                           0             ,; // -- Coordenada inicial, Coluna Inicial
@@ -36,6 +40,15 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
                           Nil           ,; // -- Fixo
                           Nil           ,; // -- Fixo
                           .T.           )  // -- Indica que as coordenadas serão em pixels
+
+    for x := 1 to nCampos
+        cCampos     := fieldname(x)
+        cConteudo   := if(nOpc == 3,criavar(cCampo,.T.,.T.), fieldget(x))
+        M->&(cCampo):= xConteudo // substitui as aspas pelo conteudo de uma variavel declarada
+    next
+
+    //regToMemory(cAlias,if(nOpc ==3,.T.,.F.),.T.) // esta é uma outra forma de dizer o for ai de cima
+
     oDlg:activate() //ativa a tela assim que a encontra e a abre
 
 Return
