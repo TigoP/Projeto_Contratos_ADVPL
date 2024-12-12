@@ -1,4 +1,5 @@
 #include 'totvs.ch'
+#include 'tbiconn.ch'
 
 //funções do modelo 3 para fazer telas
 Function U_GCTA002
@@ -64,6 +65,7 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
 
             // --------------------------------- Area Cabeçalho -----------------------------------
     regToMemory(cAlias,if(nOpc == 3,.T.,.F.),.T.) 
+    M->Z51_NUMERO := if(nOpc == 3, getSxeNum('Z51','Z51_NUMERO'),Z51->Z51_NUMERO)
     msmGet():new(cAlias,nReg,nOpc,,,,,aPObj[1])
     // enchoice(cAlias,nReg,nOpc,,,,,aPObj[1]) //enchoice é um outro jeito de fazer o mget de cima
     enchoiceBar(oDlg,bSalvar,bCancelar,,aButtons)
@@ -89,6 +91,147 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
 
     oDlg:activate() //ativa a tela assim que a encontra e a abre
 
+    if nSalvar = 1
+        // -- função de gravação de dados
+        fnGravar(nOpc, aHeader,oGet:aCols)
+
+        if __lSX8
+            confirmSX8() //isto salva o numero para o sequencial
+        endif
+    else
+        if __lSX8
+            rollbackSX8()
+        endif
+    endif
+
+Return
+
+/*/{Protheus.doc} 
+Função auxiliar para gravação
+/*/
+Static Function fnGravar(nOpc,aHeader,aCols)
+
+    Local x,y
+    Local nCampos
+    Local cCampo
+    Local xConteudo
+    Local aLinha := [0]
+    Local lDelete
+    Local lFound
+
+    BEGIN TRANSACTION
+
+    Do Case
+
+        Case nOpc == 3 // -- Inclusao
+
+            nCampos := Z51->(fCount()) //recebe a quantidade de campos que possui
+
+            // -- gravacao dos dados do cabeçalho
+            Z51->(reclock(alias(),.T.))
+
+                for x := 1 to nCampos
+                    Z51->&(fieldname(x)) := M->&(fieldname(x))
+                next
+
+                Z51->Z51_FILIAL := xFilial('Z51')
+
+            Z51->(msunlock())
+
+            // gravacao dos dados dos itens
+            for x := 1 to Len(aCols)
+
+                lFound  := Z52->(Found())
+
+                aLinha  := aClone(aCols[x])
+                lDelete := aLinha[Len(aLinha)]
+
+                if lDelete
+                    Loop
+                endif
+
+                Z52->(reclock(alias(),.T.))
+
+                    for y := 1 to Len(aHeader)
+                        cCampo          := aHeader[y,2]
+                        xConteudo       := aCols[x,y]
+                        Z52->&(cCampo)  := xConteudo
+                    next
+
+                    Z52->Z52_FILIAL     := xFilial('Z52')
+                    Z52->Z52_NUMERO     := M->Z51_NUMERO
+
+                Z52->(msunlock())
+
+            next
+            
+        Case nOpc == 4 // -- Alteração
+
+            nCampos := Z51->(fCount()) //recebe a quantidade de campos que possui
+
+            Z51->(dbSetOrder(1),dbSeek(xFilial(alias())+M->Z51_NUMERO))
+
+            // -- gravacao dos dados do cabeçalho
+            Z51->(reclock(alias(),.F.))
+
+                for x := 1 to nCampos
+                    Z51->&(fieldname(x)) := M->&(fieldname(x))
+                next
+
+                Z51->Z51_FILIAL := xFilial('Z51')
+
+            Z51->(msunlock())
+
+            // -- gravação dos itens
+            for x := 1 to Len(aCols)
+
+                // posiciona no registro
+                Z52->(dbSetOrder(1),dbSeek(xFilial(alias())+M->Z51_NUMERO+aCols[x,1]))
+
+                aLinha  := aClone(aCols[x])
+                lDelete := aLinha[Len(aLinha)]
+
+                if lDelete
+
+                    if Z52->(Found())
+                        Z52->(reclock(alias(),.F.),dbDelete(),msunlock())
+                    endif
+
+                    Loop
+
+                endif
+
+                lInc := .not. lFound
+
+                Z52->(reclock(alias(),lInc))
+
+                    for y := 1 to Len(aHeader)
+                        cCampo          := aHeader[y,2]
+                        xConteudo       := aCols[x,y]
+                        Z52->&(cCampo)  := xConteudo
+                    next
+
+                    Z52->Z52_FILIAL     := xFilial('Z52')
+                    Z52->Z52_NUMERO     := M->Z51_NUMERO
+
+                Z52->(msunlock())
+
+            next
+
+        Case nOpc == 5 // -- Exclusao
+
+            Z52->(dbSetOrder(1),dbSeek(xFilial(alias())+Z51->Z51_NUMERO))
+
+            while .not. Z52->(eof()) .and. Z52->(Z52_FILIAL+Z52_NUMERO) == Z51->(Z51_FILIAL+Z51_NUMERO)
+                Z52->(reclock(alias(),.F.), dbDelete(),msunlock(),dbSkip())
+            enddo
+
+            Z51->(reclock(alias(),.F.), dbDelete(), msunlock())
+            
+    EndCase
+
+    END TRANSACTION
+    
 Return
 
 /*/{Protheus.doc} fnGetHeader
@@ -142,8 +285,8 @@ Static Function fnGetCols(nOpc,aHeader)
     Local aAux  := array(0)
 
     if nOpc == 3 // inclusão
-        aEval(aHeader,{|x| add(aAux,criavar(x[2],.T.))})
-        aAux[1] =: '001'
+        aEval(aHeader,{|x| aadd(aAux,criavar(x[2],.T.))})
+        aAux[1] := '001'
         aadd(aAux,.F.)
         aadd(aCols,aAux)
         Return aCols
@@ -161,3 +304,4 @@ Static Function fnGetCols(nOpc,aHeader)
     enddo
     
 Return aCols
+
