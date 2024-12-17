@@ -20,7 +20,7 @@ Return
 
 Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e nOpc é qual numero ali em cima representa
 
-    Local oDlg, oGet
+    Local oDlg
     Local aAdvSize := msAdvSize()
     Local aInfo    := {aAdvSize[1],aAdvSize[2],aAdvSize[3],aAdvSize[4],3,3}
     Local aObj     := {{100,120,.T.,.F.},{100,100,.T.,.T.},{100,010,.T.,.F.}} //largura, altura,
@@ -38,6 +38,7 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
     //Local xConteudo
     //Local x
 
+    Private oGet
     Private aGets := array(0)
     Private aTela := array(0)
 
@@ -76,15 +77,15 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
                                 aPObj[2,3]     ,; // -- Coordenada final,  Coluna final
                                 aPObj[2,4]     ,; // -- Coordenada final, Linha final
                                 nStyle         ,; // -- opções que podem ser executadas
-                                'allWaysTrue()',; // -- validação da mudança de linha
-                                'allWaysTrue()',; // -- validação final
+                                'U_GCTA002V(1)',; // -- validação da mudança de linha
+                                'U_GCTA002V(2)',; // -- validação final
                                 '+Z52_ITEM'    ,; // -- definição do campo incremental
                                 nil            ,; // -- lista dos campos que podem ser alterados
                                 0              ,; // -- fixo
                                 9999           ,; // -- total de linhas
-                                'allWaysTrue()',; // -- valida cada campo preenchido
+                                'U_GCTA002V(3)',; // -- valida cada campo preenchido
                                 nil            ,; // -- fixo
-                                'allWaysTrue()',; // -- funcao que valida se pode deletar
+                                'U_GCTA002V(4)',; // -- funcao que valida se pode deletar
                                 oDlg           ,; // -- objeto prorietario
                                 aHeader        ,; // -- vetor com configuração de campos
                                 aCols           )  // -- vetor com conteudo dos campos
@@ -105,6 +106,27 @@ Function U_GCTA002M(cAlias,nReg,nOpc) //nRecno é o botão clicado pelo usuario e 
     endif
 
 Return
+
+/*/{Protheus.doc} 
+valida linhas do Grid
+/*/
+Function U_GCTA002V(nOpcao)
+
+    Local lValid := .T.
+
+    if nOpcao == 1 // -- mudança de linha
+
+        lValid := oGet:chkObrigat(n) //-- n é o numero de linhas
+
+    elseif nOpcao == 2 // -- validação final
+        
+    elseif nOpcao == 3 // -- valida cada campo preenchido
+        
+    elseif nOpcao == 4 // -- funcao que valida se pode deletar
+        
+    endif
+
+Return lValid
 
 /*/{Protheus.doc} 
 Função auxiliar para gravação
